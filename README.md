@@ -28,7 +28,7 @@ python3 -m http.server 8766
 1. 櫃台：`index.html` → ⋯ **重設示範** → **訂位／候位** → 開「名單」：見各組 **第 N 組**＋座位 ETA 帶（空桌／待清／等翻桌）與理由晶片。
 2. 切 **桌況** → 選一張 **待清**（如 T5／B3）→ **循環下一態** 清成空桌（或抽屜／設定按 **示範：清一桌看 ETA 變**）。
 3. 回 **訂位／候位**：同一組 ETA 應變短或變「可叫號／較快」。
-4. （可選）**更多 → 客人**：見一行「位子還要多久（候位）」≠ 出餐文案；設定可改待清／翻桌示意分；開發者工具可呼叫 `__demoPreview.mockApiGet("waitSeatEta")`。
+4. （可選）**更多 → 客人**：見一行「位子還要多久（候位）」≠ 出餐文案；設定可改待清／翻桌示意分；開發者工具可呼叫 `__demoPreview.mockApiGet("waitSeatEta", orgId)`（`orgId` 來自 `__demoPreview.getMeta().currentOrgId`）。
 
 標籤：Preview · mock · 與桌況同源 · 示意·非保證 · 非 Production。
 
