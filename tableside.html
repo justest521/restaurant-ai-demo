@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>示範食堂｜掃碼點餐 Preview</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="tableside.css">
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("restaurant-ai-demo-preview-hym-theme");
+        if (t !== "steel" && t !== "paper") t = "paper";
+        document.documentElement.setAttribute("data-hym-theme", t);
+      } catch (e) {
+        document.documentElement.setAttribute("data-hym-theme", "paper");
+      }
+    })();
+  </script>
+</head>
+<body class="tableside-body" data-hym-theme="paper">
+  <script>
+    (function () {
+      var t = document.documentElement.getAttribute("data-hym-theme") || "paper";
+      document.body.setAttribute("data-hym-theme", t);
+    })();
+  </script>
+
+  <div class="ts-app" id="ts-app">
+    <div class="preview-banner ts-banner" role="status">
+      Preview｜掃碼點餐｜客人桌邊｜非正式　·　無真實金流　·　送廚後改單請找店員
+    </div>
+
+    <header class="ts-header">
+      <div class="brand">
+        <div class="mark" aria-hidden="true"></div>
+        <div class="brand-text">
+          <div class="shop" id="ts-shop">示範食堂</div>
+          <div class="role">掃碼點餐 · 客人自助</div>
+        </div>
+      </div>
+      <div class="ts-table-block" id="ts-table-wrap">
+        <label class="ts-table-label" for="ts-table">桌號</label>
+        <select id="ts-table" class="ts-table-select" aria-label="桌號／桌碼"></select>
+        <div class="ts-table-fixed" id="ts-table-fixed" hidden>
+          <span class="ts-table-code" id="ts-table-code">T3</span>
+          <span class="help">掃碼綁定</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="ts-scan-note help" id="ts-scan-note" hidden></div>
+    <div class="ts-rules" role="note">
+      <strong>規則</strong>
+      <span>送廚前可改數量／刪除；送廚後要店員協助改單。</span>
+      <span class="help">無結帳金流 · 僅 Preview · 掃桌上 QR 進本頁</span>
+    </div>
+
+    <div class="ts-layout">
+      <main class="ts-menu panel" aria-label="菜單">
+        <div class="panel-h">
+          <h2>菜單</h2>
+          <span class="help" id="ts-menu-help">點大鍵加入購物車</span>
+        </div>
+        <div class="ts-cats" id="ts-cats"></div>
+      </main>
+
+      <aside class="ts-cart panel" aria-label="購物車">
+        <div class="panel-h">
+          <h2>此桌訂單</h2>
+          <span class="line-fake-badge" id="ts-cart-badge">草稿·未送廚</span>
+        </div>
+        <div class="ts-cart-list" id="ts-cart-list"></div>
+        <div class="total">
+          <span>金額</span>
+          <span class="money" id="ts-total">NT$ 0</span>
+        </div>
+        <div class="ts-cart-actions">
+          <button type="button" class="btn" id="ts-clear" hidden>清空草稿</button>
+          <button type="button" class="btn primary ts-submit" id="ts-submit" disabled>送廚</button>
+        </div>
+        <p class="help ts-submit-hint" id="ts-submit-hint">確認後寫入廚房／POS 佇列（本機示意）</p>
+        <div class="ts-sent" id="ts-sent" hidden></div>
+        <a class="ts-back help" href="index.html">← 回櫃台腦 Preview</a>
+      </aside>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden role="status"></div>
+  <script src="tableside.js"></script>
+</body>
+</html>

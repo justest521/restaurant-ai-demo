@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>版面 C｜單焦點舞台 — Sunmi T3 佈局選項</title>
+  <link rel="stylesheet" href="layouts.css">
+</head>
+<body>
+  <div class="demo-page">
+    <div class="demo-bar">
+      <a href="index.html">← 佈局選項</a>
+      <span class="opt-name">C · 單焦點舞台（Owner lock＝主 Preview 預設）</span>
+      <span class="opt-desc">中央巨大焦點面板（選中桌／單）＋拆併＋超大 CTA；模擬 AI 分配須確認</span>
+      <div class="demo-links">
+        <a href="option-a.html">A</a>
+        <a href="option-b.html">B</a>
+        <a href="option-c.html" class="is-on">C</a>
+        <a href="../index.html">主 Preview</a>
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="t3" id="t3" aria-label="Sunmi T3 1920×1080 示意">
+        <header class="app-top">
+          <div class="brand-mini"><span class="dot" aria-hidden="true"></span>示範食堂 · 櫃台</div>
+          <div class="meta-mini">
+            <span class="chip ok">營業中</span>
+            <span class="chip">週日 17:08</span>
+            <span class="chip">焦點模式</span>
+            <span class="chip">模擬 AI</span>
+          </div>
+        </header>
+
+        <div class="now-do" id="now-do">
+          <span class="now-do-badge">現在該做</span>
+          <span id="now-do-text">A3 用餐 96′ — 建議詢問結帳或加點</span>
+        </div>
+
+        <div class="opt-c">
+          <div class="edge-chips" id="chips" role="tablist" aria-label="桌位邊緣 chip"></div>
+
+          <div class="focus">
+            <div class="focus-panel" id="focus-panel">
+              <div>
+                <div class="focus-id" id="f-id">A3</div>
+                <div class="focus-status dining" id="f-status">
+                  <span class="dot" aria-hidden="true"></span>
+                  <span id="f-status-text">用餐中</span>
+                </div>
+                <div class="focus-meta">
+                  <div class="cell"><div class="k">人數</div><div class="v" id="f-guests">4 / 4</div></div>
+                  <div class="cell"><div class="k">用餐時間</div><div class="v" id="f-mins">96′</div></div>
+                  <div class="cell"><div class="k">桌型</div><div class="v" id="f-seats">4 人桌</div></div>
+                  <div class="cell"><div class="k">區</div><div class="v" id="f-zone">A 區</div></div>
+                </div>
+              </div>
+              <div class="focus-side">
+                <div id="f-split" style="margin-bottom:10px"></div>
+                <div class="seat-assign-mini" style="margin-bottom:12px;padding:8px 10px;border:1px solid color-mix(in srgb,#7C3AED 35%,#D4D8D6);border-radius:8px;background:color-mix(in srgb,#7C3AED 7%,#fff)">
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+                    <strong style="font-size:13px">AI 模擬分配</strong>
+                    <span style="font-size:10px;font-weight:800;color:#7C3AED">模擬 AI · 非正式</span>
+                  </div>
+                  <p style="margin:6px 0;font-size:12px;color:#3A3A3A" id="ai-assign-text">按下方按鈕產出建議；須確認才入座。</p>
+                  <button type="button" class="btn btn-secondary" id="btn-ai-assign">AI 模擬分配</button>
+                </div>
+                <h3>本桌示意帳單</h3>
+                <div id="f-orders"></div>
+                <div class="order-total">
+                  <span>合計</span>
+                  <span class="amt" id="f-total">$1,280</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="cta-row" role="toolbar" aria-label="焦點動作">
+              <button type="button" class="btn btn-xl btn-primary" id="btn-seat">確認入座</button>
+              <button type="button" class="btn btn-xl btn-secondary" id="btn-page">發送補位</button>
+              <button type="button" class="btn btn-xl btn-brass" id="btn-pay">結帳</button>
+            </div>
+          </div>
+
+          <button type="button" class="drawer-btn" id="btn-drawer" aria-expanded="false" aria-controls="info-drawer">情報</button>
+          <div class="backdrop" id="backdrop" hidden></div>
+          <aside class="drawer" id="info-drawer" aria-label="情報抽屜">
+            <button type="button" class="drawer-close" id="btn-drawer-close">關閉</button>
+            <h3>現場情報</h3>
+            <div class="mini-stat"><span>用餐</span><strong id="d-dining">5</strong></div>
+            <div class="mini-stat"><span>待清</span><strong id="d-dirty">1</strong></div>
+            <div class="mini-stat"><span>空桌</span><strong id="d-empty">2</strong></div>
+            <div class="mini-stat"><span>候位組數</span><strong>3</strong></div>
+            <div class="mini-stat"><span>今日來客</span><strong>86</strong></div>
+            <div class="mini-stat"><span>翻桌示意</span><strong>12</strong></div>
+            <p style="font-size:11px;color:var(--ink4);margin-top:16px;line-height:1.5">
+              情報收進邊緣 chip 與抽屜，舞台只留給「當下這一桌」與超大 CTA。
+            </p>
+          </aside>
+        </div>
+
+        <div class="toast" id="toast" role="status"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const parties = [
+      { name: "張小姐", partySize: 2, kind: "waitlist", waited: 12 },
+      { name: "趙先生", partySize: 4, kind: "reservation", slot: "18:30", pref: "靠窗" },
+      { name: "劉府上", partySize: 6, kind: "waitlist", waited: 18 }
+    ];
+    const tables = [
+      { id: "A1", seats: 4, capacity: 4, status: "dining", guests: 3, mins: 42,
+        orders: [["招牌定食", 2, 680], ["紅茶", 2, 120]], total: 800 },
+      { id: "A2", seats: 2, capacity: 2, status: "empty", guests: 0, mins: 0, orders: [], total: 0 },
+      { id: "A3", seats: 4, capacity: 4, status: "dining", guests: 4, mins: 96, late: true,
+        orders: [["雙人套餐", 2, 980], ["季節沙拉", 1, 180], ["熱咖啡", 2, 120]], total: 1280 },
+      { id: "A4", seats: 6, capacity: 6, splitParts: [4, 2], status: "dining", guests: 5, mins: 28,
+        orders: [["家庭拼盤", 1, 880], ["兒童餐", 2, 360]], total: 1240 },
+      { id: "B1", seats: 2, capacity: 2, status: "dirty", guests: 0, mins: 8, orders: [], total: 0 },
+      { id: "B2", seats: 4, capacity: 4, splitParts: [2, 2], status: "dining", guests: 2, mins: 55,
+        orders: [["單人定食", 2, 560]], total: 560 },
+      { id: "B3", seats: 4, capacity: 4, splitParts: [2, 2], split: true,
+        parts: [{ id: "a", seats: 2, status: "empty" }, { id: "b", seats: 2, status: "empty" }],
+        status: "empty", guests: 0, mins: 0, orders: [], total: 0 },
+      { id: "B4", seats: 8, capacity: 8, splitParts: [4, 4], status: "dining", guests: 7, mins: 18,
+        orders: [["聚會套餐", 1, 2200], ["啤酒", 4, 400]], total: 2600 }
+    ];
+    let selected = "A3";
+    const statusLabel = { empty: "空桌", dining: "用餐中", dirty: "待清桌" };
+
+    function toast(msg) {
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.classList.add("show");
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => el.classList.remove("show"), 1800);
+    }
+
+    function money(n) {
+      return "$" + n.toLocaleString("zh-TW");
+    }
+
+    function refreshDrawerStats() {
+      document.getElementById("d-dining").textContent = tables.filter(t => t.status === "dining").length;
+      document.getElementById("d-dirty").textContent = tables.filter(t => t.status === "dirty").length;
+      document.getElementById("d-empty").textContent = tables.filter(t => t.status === "empty").length;
+    }
+
+    function updateCTAs(t) {
+      document.getElementById("btn-seat").disabled = !(t.status === "empty" || t.status === "dirty");
+      document.getElementById("btn-page").disabled = t.status !== "empty";
+      document.getElementById("btn-pay").disabled = t.status !== "dining";
+      ["btn-seat", "btn-page", "btn-pay"].forEach(id => {
+        document.getElementById(id).classList.toggle("is-off", document.getElementById(id).disabled);
+      });
+    }
+
+    function renderFocus() {
+      const t = tables.find(x => x.id === selected);
+      if (!t) return;
+      document.getElementById("f-id").textContent = t.id;
+      const st = document.getElementById("f-status");
+      st.className = "focus-status " + t.status;
+      document.getElementById("f-status-text").textContent =
+        statusLabel[t.status] + (t.late ? " · 過久" : "");
+      document.getElementById("f-guests").textContent =
+        t.status === "empty" || t.status === "dirty" ? "— / " + t.seats : t.guests + " / " + t.seats;
+      document.getElementById("f-mins").textContent = t.status === "dining" ? t.mins + "′" : "—";
+      const cap = t.capacity || t.seats;
+      const shape = t.splitParts ? t.splitParts.join("+") : "";
+      document.getElementById("f-seats").textContent = cap + " 人桌" + (shape ? " · 可拆 " + shape : "");
+      document.getElementById("f-zone").textContent = t.id.charAt(0) + " 區" + (t.split ? " · 已拆" : "");
+      const splitBox = document.getElementById("f-split");
+      if (splitBox) {
+        const canSplit = !t.split && t.splitParts && (t.status === "empty" || t.status === "dirty");
+        const canMerge = t.split && (t.parts || []).every(p => p.status !== "dining");
+        splitBox.innerHTML =
+          (canSplit ? '<button type="button" class="btn" id="btn-split">拆成 ' + shape + "</button>" : "") +
+          (canMerge ? '<button type="button" class="btn" id="btn-unsplit">併回 ' + cap + " 人桌</button>" : "") +
+          (t.split && t.parts ? '<div class="help" style="margin-top:8px;font-size:12px;color:var(--ink3)">半桌：' +
+            t.parts.map(p => t.id + "-" + p.id.toUpperCase() + " " + p.seats + "人 " + (p.status === "empty" ? "空" : p.status)).join("／") +
+            "</div>" : "");
+        const bs = document.getElementById("btn-split");
+        if (bs) bs.onclick = () => {
+          t.split = true;
+          t.parts = t.splitParts.map((n, i) => ({ id: String.fromCharCode(97 + i), seats: n, status: t.status === "dirty" ? "dirty" : "empty" }));
+          toast(t.id + " 已拆為 " + shape + "（示意）");
+          renderChips(); renderFocus();
+        };
+        const bu = document.getElementById("btn-unsplit");
+        if (bu) bu.onclick = () => {
+          t.split = false; t.parts = [];
+          toast(t.id + " 已併回整桌（示意）");
+          renderChips(); renderFocus();
+        };
+      }
+
+      const orders = document.getElementById("f-orders");
+      if (!t.orders.length) {
+        orders.innerHTML = '<div style="color:var(--ink4);font-size:14px;padding:12px 0">尚無點餐（示意）</div>';
+      } else {
+        orders.innerHTML = t.orders.map(o =>
+          '<div class="order-line"><span>' + o[0] + " ×" + o[1] + '</span><span>' + money(o[2]) + "</span></div>"
+        ).join("");
+      }
+      document.getElementById("f-total").textContent = money(t.total);
+
+      if (t.late) {
+        document.getElementById("now-do-text").textContent =
+          t.id + " 用餐 " + t.mins + "′ — 建議詢問結帳或加點";
+      } else if (t.status === "dirty") {
+        document.getElementById("now-do-text").textContent = t.id + " 待清 — 請安排清桌後可再入座";
+      } else if (t.status === "empty") {
+        document.getElementById("now-do-text").textContent = t.id + " 空桌 — 可發送補位或確認入座";
+      } else {
+        document.getElementById("now-do-text").textContent = t.id + " 用餐中 — 可結帳或繼續點餐";
+      }
+
+      updateCTAs(t);
+      refreshDrawerStats();
+      document.getElementById("focus-panel").classList.remove("flash");
+      void document.getElementById("focus-panel").offsetWidth;
+      document.getElementById("focus-panel").classList.add("flash");
+    }
+
+    function renderChips() {
+      const wrap = document.getElementById("chips");
+      wrap.innerHTML = "";
+      tables.forEach(t => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "edge-chip " + t.status + (selected === t.id ? " is-on" : "");
+        b.setAttribute("role", "tab");
+        b.setAttribute("aria-selected", selected === t.id ? "true" : "false");
+        b.innerHTML =
+          '<span class="id">' + t.id + '</span>' +
+          '<span class="st">' + statusLabel[t.status] + (t.split && t.splitParts ? " · " + t.splitParts.join("+") : "") + (t.late ? "!" : "") + "</span>";
+        b.addEventListener("click", () => { selected = t.id; renderChips(); renderFocus(); });
+        wrap.appendChild(b);
+      });
+      const add = document.createElement("button");
+      add.type = "button";
+      add.className = "edge-chip add";
+      add.textContent = "候位 · 3";
+      add.title = "開啟情報抽屜看候位";
+      add.addEventListener("click", openDrawer);
+      wrap.appendChild(add);
+    }
+
+    function openDrawer() {
+      document.getElementById("info-drawer").classList.add("open");
+      document.getElementById("backdrop").hidden = false;
+      document.getElementById("backdrop").classList.add("open");
+      document.getElementById("btn-drawer").setAttribute("aria-expanded", "true");
+    }
+    function closeDrawer() {
+      document.getElementById("info-drawer").classList.remove("open");
+      document.getElementById("backdrop").classList.remove("open");
+      document.getElementById("backdrop").hidden = true;
+      document.getElementById("btn-drawer").setAttribute("aria-expanded", "false");
+    }
+    document.getElementById("btn-drawer").addEventListener("click", openDrawer);
+    document.getElementById("btn-drawer-close").addEventListener("click", closeDrawer);
+    document.getElementById("backdrop").addEventListener("click", closeDrawer);
+
+    document.getElementById("btn-seat").addEventListener("click", () => {
+      const t = tables.find(x => x.id === selected);
+      if (!t || document.getElementById("btn-seat").disabled) return;
+      t.status = "dining"; t.guests = Math.min(t.seats, 2); t.mins = 0; t.late = false;
+      t.orders = [["今日特餐", 2, 560]]; t.total = 560;
+      toast(t.id + " 已確認入座");
+      renderChips(); renderFocus();
+    });
+    document.getElementById("btn-page").addEventListener("click", () => {
+      if (document.getElementById("btn-page").disabled) return;
+      toast("已發送補位 → " + selected + "（示意）");
+    });
+    document.getElementById("btn-ai-assign").addEventListener("click", () => {
+      const empty = tables.filter(t => t.status === "empty" || (t.split && (t.parts || []).some(p => p.status === "empty")));
+      const lines = parties.map(p => {
+        const hit = empty.find(t => {
+          if (t.split && t.parts) return t.parts.some(part => part.status === "empty" && part.seats >= p.partySize);
+          return (t.capacity || t.seats) >= p.partySize && t.status === "empty";
+        });
+        if (!hit) return p.name + "（" + p.partySize + " 位）→ 暫無空桌";
+        if (hit.split && hit.parts) {
+          const part = hit.parts.find(x => x.status === "empty" && x.seats >= p.partySize);
+          return p.name + "（" + p.partySize + " 位）→ " + hit.id + "-" + part.id.toUpperCase() + "　拆桌剛好";
+        }
+        return p.name + "（" + p.partySize + " 位）→ " + hit.id + "　" + (p.kind === "reservation" ? "已訂優先" : "候位");
+      });
+      document.getElementById("ai-assign-text").textContent = lines.join(" ／ ") + "　·　未自動入座";
+      toast("已產出模擬分配（非正式 AI）· 請確認後才入座");
+    });
+
+    document.getElementById("btn-pay").addEventListener("click", () => {
+      const t = tables.find(x => x.id === selected);
+      if (!t || document.getElementById("btn-pay").disabled) return;
+      t.status = "dirty"; t.guests = 0; t.mins = 0; t.late = false;
+      t.orders = []; t.total = 0;
+      toast(t.id + " 結帳完成 → 待清桌");
+      renderChips(); renderFocus();
+    });
+
+    renderChips();
+    renderFocus();
+  </script>
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>示範食堂｜櫃台腦 Preview v2（T3 1920×1080）</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="tableside.css">
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("restaurant-ai-demo-preview-hym-theme");
+        if (t !== "steel" && t !== "paper") t = "paper";
+        document.documentElement.setAttribute("data-hym-theme", t);
+        /* OV-P0-05: default stage (chrome-off) unless explicitly on */
+        var c = localStorage.getItem("restaurant-ai-demo-preview-t3-chrome");
+        if (c !== "on") document.documentElement.classList.add("chrome-off-boot");
+      } catch (e) {
+        document.documentElement.setAttribute("data-hym-theme", "paper");
+        document.documentElement.classList.add("chrome-off-boot");
+      }
+    })();
+  </script>
+</head>
+<body data-hym-theme="paper">
+  <script id="boot-sync-theme">
+    (function () {
+      var t = document.documentElement.getAttribute("data-hym-theme") || "paper";
+      document.body.setAttribute("data-hym-theme", t);
+      if (document.documentElement.classList.contains("chrome-off-boot")) {
+        document.body.classList.add("chrome-off");
+      }
+    })();
+  </script>
+  <div class="desk">
+    <div class="t3-device" id="t3-device" aria-label="Sunmi T3 15.6 吋 FHD 1920×1080 示意">
+      <div class="t3-screen">
+        <div class="app-shell">
+          <div class="preview-banner" role="status">
+            Preview｜非正式環境　·　模擬 AI　·　Demo mock ≠ 正式授權　·　無真實金流、無正式 LINE
+          </div>
+
+          <div class="offline-banner" id="offline-banner" hidden role="alert">
+            <span>連線中斷。畫面資料可能不是最新；請檢查網路後再操作。已輸入內容先留在本機（Preview：本機儲存）。</span>
+            <button type="button" class="btn" id="btn-retry-online">重試</button>
+          </div>
+
+          <!-- OV-P0-01 slim header -->
+          <header class="app-header">
+            <div class="brand">
+              <div class="mark" aria-hidden="true"></div>
+              <div class="brand-text">
+                <div class="shop" id="shop-name">示範食堂</div>
+                <div class="role" id="header-sub">櫃台腦</div>
+              </div>
+            </div>
+            <div class="header-meta">
+              <label class="org-switcher" title="切換店家（多租戶示意）">
+                <span class="org-label">店家</span>
+                <select id="org-select" aria-label="切換店家"></select>
+              </label>
+              <span class="role-badge" id="role-badge" title="目前身分">店長</span>
+              <div class="more-wrap">
+                <button type="button" class="ghost more-btn" id="btn-overflow" aria-expanded="false" aria-controls="overflow-menu" title="更多設定">⋯</button>
+                <div class="overflow-menu" id="overflow-menu" hidden role="menu">
+                  <div class="overflow-row">
+                    <span class="overflow-lab">主題</span>
+                    <div class="theme-toggle" role="group" aria-label="主題 Paper｜Steel">
+                      <button type="button" id="btn-theme-paper" data-theme="paper" class="is-on">紙</button>
+                      <button type="button" id="btn-theme-steel" data-theme="steel">鋼</button>
+                    </div>
+                  </div>
+                  <div class="overflow-row">
+                    <span class="overflow-lab">機框</span>
+                    <div class="chrome-toggle" role="group" aria-label="T3 機框">
+                      <button type="button" id="btn-chrome-on" data-chrome="on">機框</button>
+                      <button type="button" id="btn-chrome-off" data-chrome="off" class="is-on">舞台</button>
+                    </div>
+                  </div>
+                  <div class="overflow-row">
+                    <span class="overflow-lab">時間</span>
+                    <span id="clock" class="overflow-clock">—</span>
+                  </div>
+                  <div class="overflow-row">
+                    <span class="overflow-lab">短碼</span>
+                    <span class="org-id-chip" id="org-id-chip" title="店家短碼（除錯）">—</span>
+                  </div>
+                  <button type="button" class="overflow-action" id="btn-offline">模擬離線</button>
+                  <button type="button" class="overflow-action" id="btn-reset">重設示範</button>
+                  <a class="overflow-action overflow-link" href="tableside.html?table=T3" target="_blank" rel="noopener" role="menuitem">掃碼點餐 Preview（T3）</a>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <!-- OV-P0-02 collapsible stats -->
+          <section class="analytics-bar" aria-label="今日示意">
+            <button type="button" class="stats-compact" id="btn-stats-toggle" aria-expanded="false">
+              <span id="stats-compact-text">用餐 — · 待清 — · 空 — · 候位 —</span>
+              <span class="stats-chevron" aria-hidden="true">▾</span>
+            </button>
+            <div class="analytics" id="analytics-expand" hidden>
+              <article class="stat">
+                <div class="stat-k">今日來客</div>
+                <div class="stat-v" id="stat-covers">—</div>
+                <div class="stat-s" id="stat-covers-sub">含在席與已離席</div>
+              </article>
+              <article class="stat">
+                <div class="stat-k">翻桌示意</div>
+                <div class="stat-v" id="stat-turns">—</div>
+                <div class="stat-s" id="stat-turns-sub">待清→空桌計一次</div>
+              </article>
+              <article class="stat">
+                <div class="stat-k">現場桌況</div>
+                <div class="stat-v sm" id="stat-floor">—</div>
+                <div class="stat-s" id="stat-floor-sub">點桌可選狀態</div>
+              </article>
+              <article class="stat">
+                <div class="stat-k">候位組數</div>
+                <div class="stat-v" id="stat-wait">—</div>
+                <div class="stat-s" id="stat-wait-sub">含邀請中</div>
+              </article>
+            </div>
+          </section>
+
+          <section class="cross-store" id="cross-store-panel" aria-label="跨店分析示意" hidden>
+            <div class="cross-store-inner">
+              <div class="cross-store-h">
+                <strong>跨店分析</strong>
+                <span class="help" id="cross-store-plan-note">需高端方案＋跨店資料授權</span>
+              </div>
+              <div id="cross-store-body"></div>
+            </div>
+          </section>
+
+          <!-- OV-P0-03 peak tabs only + 更多 -->
+          <nav class="tabs" role="tablist" aria-label="畫面">
+            <div class="tab-group peak" role="presentation">
+              <button type="button" role="tab" data-screen="tables" class="tab is-on" aria-selected="true">桌況</button>
+              <button type="button" role="tab" data-screen="wait" class="tab" aria-selected="false">訂位／候位</button>
+              <button type="button" role="tab" data-screen="pos" class="tab" aria-selected="false">POS-1</button>
+            </div>
+            <div class="tab-group more-group">
+              <button type="button" class="tab tab-more" id="btn-more" aria-expanded="false" aria-controls="insight-drawer">更多</button>
+            </div>
+          </nav>
+
+          <!-- OV-P0-04 now-do strip -->
+          <div class="now-do" id="now-do" hidden role="status">
+            <span class="now-do-badge">現在該做</span>
+            <span class="now-do-text" id="now-do-text"></span>
+            <span class="now-do-actions" id="now-do-actions"></span>
+          </div>
+
+          <div class="view-scroll">
+            <main id="view" class="view"></main>
+          </div>
+        </div>
+      </div>
+      <div class="t3-foot" aria-hidden="true"><span></span> SUNMI T3 · 15.6″ · 1920×1080 <span></span></div>
+    </div>
+  </div>
+
+  <!-- Insight drawer -->
+  <div class="insight-backdrop" id="insight-backdrop" hidden></div>
+  <aside class="insight-drawer" id="insight-drawer" hidden aria-label="洞察">
+    <div class="insight-drawer-h">
+      <strong>洞察</strong>
+      <button type="button" class="ghost" id="btn-more-close" aria-label="關閉">關閉</button>
+    </div>
+    <nav class="insight-nav" aria-label="洞察頁">
+      <button type="button" class="insight-link" data-screen="hq">總部報告</button>
+      <button type="button" class="insight-link" data-screen="finance">財務</button>
+      <button type="button" class="insight-link" data-screen="guest">客人</button>
+      <button type="button" class="insight-link" data-screen="compete">競品</button>
+      <button type="button" class="insight-link" data-screen="settings">設定</button>
+      <a class="insight-link as-link" href="tableside.html?table=T3" target="_blank" rel="noopener">掃碼點餐（桌邊）</a>
+    </nav>
+    <div id="suggestion-trail-slot" class="insight-trail-slot" aria-live="polite"></div>
+    <p class="help insight-hint">尖峰作業請用上方三頁。此處為店長洞察、總部報告、建議紀錄與設定。桌邊＝客人掃桌上 QR。N4：確認／略過可稽核。N5：設定可調遲到寬限；逾時釋放＋補位 CTA（非 AI 消滅 no-show）。</p>
+  </aside>
+
+  <div id="toast" class="toast" hidden role="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>
