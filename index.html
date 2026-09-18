@@ -4,6 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>示範食堂｜櫃台腦 Preview v2（T3 1920×1080）</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="favicon.ico" sizes="32x32">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="tableside.css">
   <script>
@@ -19,6 +21,58 @@
         document.documentElement.setAttribute("data-hym-theme", "paper");
         document.documentElement.classList.add("chrome-off-boot");
       }
+
+      /* Desk Preview: keep an inner Sunmi T3 1920×1080 stage and scale it
+         to common laptop windows. One mode — not a second fluid layout. */
+      var T3_W = 1920, T3_H = 1080, FIT_MIN_W = 1024, FIT_MIN_H = 560, PAD = 16;
+      function chromeOn() {
+        try { return localStorage.getItem("restaurant-ai-demo-preview-t3-chrome") === "on"; }
+        catch (e) { return false; }
+      }
+      function fitDeskStage() {
+        var on = chromeOn();
+        var w = T3_W + (on ? 24 : 0);
+        var h = T3_H + (on ? 44 : 0);
+        var vw = window.innerWidth || document.documentElement.clientWidth || T3_W;
+        var vh = window.innerHeight || document.documentElement.clientHeight || T3_H;
+        if (window.visualViewport) {
+          vw = window.visualViewport.width;
+          vh = window.visualViewport.height;
+        }
+        var useFit = vw >= FIT_MIN_W && vh >= FIT_MIN_H;
+        var root = document.documentElement;
+        var scale = 1;
+        if (useFit) {
+          scale = Math.min((vw - PAD) / w, (vh - PAD) / h, 1);
+          if (!(scale > 0)) scale = 1;
+          root.style.setProperty("--t3-scale", String(scale));
+          root.style.setProperty("--t3-stage-w", w + "px");
+          root.style.setProperty("--t3-stage-h", h + "px");
+          root.setAttribute("data-t3-fit", "1");
+          root.setAttribute("data-viewport", scale < 0.995 ? "laptop" : "t3");
+        } else {
+          root.style.removeProperty("--t3-scale");
+          root.style.removeProperty("--t3-stage-w");
+          root.style.removeProperty("--t3-stage-h");
+          root.removeAttribute("data-t3-fit");
+          root.setAttribute("data-viewport", "fluid");
+        }
+        var pct = Math.round(scale * 100);
+        var chip = document.getElementById("viewport-chip");
+        if (chip) {
+          chip.textContent = !useFit ? "流動版" : (scale < 0.995 ? ("縮放 " + pct + "%") : "T3 1:1");
+        }
+        var hud = document.getElementById("viewport-hud");
+        var hudText = document.getElementById("viewport-hud-text");
+        if (hud) hud.hidden = !(useFit && scale < 0.995);
+        if (hudText) hudText.textContent = pct + "% · 目標 T3 1920×1080";
+        root.style.setProperty("--t3-scale-pct", pct + "%");
+      }
+      window.fitDeskStage = fitDeskStage;
+      fitDeskStage();
+      window.addEventListener("resize", fitDeskStage);
+      if (window.visualViewport) window.visualViewport.addEventListener("resize", fitDeskStage);
+      document.addEventListener("DOMContentLoaded", fitDeskStage);
     })();
   </script>
 </head>
@@ -33,6 +87,11 @@
     })();
   </script>
   <div class="desk">
+    <div class="viewport-hud" id="viewport-hud" hidden role="status">
+      <span class="viewport-hud-k">Preview ≠ Production</span>
+      <span class="viewport-hud-v" id="viewport-hud-text">—</span>
+    </div>
+    <div class="t3-fit" id="t3-fit">
     <div class="t3-device" id="t3-device" aria-label="Sunmi T3 15.6 吋 FHD 1920×1080 示意">
       <div class="t3-screen">
         <div class="app-shell">
@@ -76,6 +135,10 @@
                       <button type="button" id="btn-chrome-on" data-chrome="on">機框</button>
                       <button type="button" id="btn-chrome-off" data-chrome="off" class="is-on">舞台</button>
                     </div>
+                  </div>
+                  <div class="overflow-row">
+                    <span class="overflow-lab">視窗</span>
+                    <span id="viewport-chip" class="overflow-clock" title="內層舞台固定 1920×1080；筆電視窗自動縮放">T3 1:1</span>
                   </div>
                   <div class="overflow-row">
                     <span class="overflow-lab">時間</span>
@@ -158,6 +221,7 @@
         </div>
       </div>
       <div class="t3-foot" aria-hidden="true"><span></span> SUNMI T3 · 15.6″ · 1920×1080 <span></span></div>
+    </div>
     </div>
   </div>
 

@@ -19,7 +19,27 @@ python3 -m http.server 8766
 - 客人掃碼點餐：`tableside.html?table=T3`
 - 佈局 A／B／C 靜態示意：`layouts/`（主 Preview 預設＝**C 單焦點舞台**）
 
-也可直接開 `index.html`。建議 DevTools 自訂裝置 **Sunmi T3**：`1920 × 1080`、觸控。預設舞台＋Paper；⋯選單可開機框／切 Steel。
+也可直接開 `index.html`。
+
+## Live Demo
+
+https://justest521.github.io/restaurant-ai-demo/
+
+**Preview ≠ Production。** GitHub Pages 只託管這份靜態 mock，不是正式授權、沒有真後端／金流／LINE。
+
+### 視窗（櫃台腦）
+
+內層舞台固定 **Sunmi T3 1920×1080**（Layout C 單焦點）。視窗夠大時 1:1；常見筆電（約 **1280×800** 起）自動 `transform: scale()` 整頁舞台以符合視窗，避免巢狀捲軸把桌況／候位焦點與底部 CTA 裁切。
+
+| 視窗 | `data-viewport` | 行為 |
+|---|---|---|
+| ≥ 1920×1080 | `t3` | 1:1 舞台 |
+| 寬 ≥1024 且高 ≥560（筆電） | `laptop` | 縮放整頁 1920×1080 舞台 |
+| 更窄／更矮 | `fluid` | 不縮放；沿用流動版 |
+
+左下角 HUD 與 ⋯選單「視窗」顯示目前縮放比。要看 T3 原尺寸：瀏覽器全螢幕 FHD，或 DevTools 自訂裝置 **Sunmi T3：1920×1080**、觸控。預設舞台＋Paper；⋯選單可開機框／切 Steel。
+
+掃碼點餐 `tableside.html` 維持行動優先、可捲動，不走 T3 縮放。
 
 ## N6 候位座位 ETA（4 次點擊驗收）
 
@@ -57,10 +77,11 @@ python3 -m http.server 8766
 ## 檔案
 
 ```
-index.html          櫃台腦
+index.html          櫃台腦（T3 1920×1080 舞台；筆電自動縮放）
 app.js              N1–N6 mock 邏輯（含候位 ETA 與桌況同源）
 styles.css
-tableside.html      客人掃碼點餐
+favicon.svg / .ico  品牌綠 #0E7B3F＋黃銅 #C4A035
+tableside.html      客人掃碼點餐（行動優先，可捲動）
 tableside.js
 tableside.css
 layouts/            A／B／C 佈局示意（C＝Owner lock）

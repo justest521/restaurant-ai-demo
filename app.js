@@ -3604,6 +3604,7 @@
     try { localStorage.setItem(CHROME_KEY, on ? "on" : "off"); } catch (e) {}
     document.body.classList.toggle("chrome-off", !on);
     document.documentElement.classList.remove("chrome-off-boot");
+    if (typeof window.fitDeskStage === "function") window.fitDeskStage();
     syncThemeChromeUi();
   }
 
@@ -6325,10 +6326,13 @@
   setInterval(tickClock, 30000);
   render();
 
+  if (typeof window.fitDeskStage === "function") window.fitDeskStage();
+
   window.__demoPreview = {
     mockApiGet: mockApiGet,
     getTheme: getTheme,
     getChromeOn: getChromeOn,
+    fitDeskStage: window.fitDeskStage,
     getState: function () { return state; },
     getMeta: function () { return meta; },
     render: render,
