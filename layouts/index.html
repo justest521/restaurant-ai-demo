@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>佈局選項 A／B／C — 示範食堂 Sunmi T3</title>
+  <link rel="stylesheet" href="layouts.css">
+</head>
+<body>
+  <div class="gallery">
+    <div class="gallery-h">
+      <div>
+        <h1>櫃台 UI 佈局選項</h1>
+        <p style="margin:8px 0 0;padding:8px 12px;background:#E3F0E8;border-radius:8px;font-size:13px;color:#0E7B3F;font-weight:700">主 Preview 預設＝<strong>C 單焦點舞台</strong>（Owner lock 2026-09-13）。A／B 僅示意參考。</p>
+        <p>
+          Sunmi T3（16:9／1920 友善）三套可點擊示意。原則：
+          <strong>動作／功能區要大；情報顯示要小</strong>。
+          品牌綠 #0E7B3F、紙白；黃銅 #C4A035 ≤10%；檸檬黃僅用於「現在該做」。
+        </p>
+      </div>
+      <a class="gallery-back" href="../index.html">← 回主 Preview</a>
+    </div>
+
+    <div class="principle">
+      <span>動作區 LARGE</span>
+      <span>情報區 SMALL</span>
+      <span class="brass-note">Brass ≤10%</span>
+      <span style="background:#F5C518;color:#1A1500">Lemon＝現在該做</span>
+    </div>
+
+    <div class="cards">
+      <a class="card" href="option-a.html">
+        <div class="card-thumb" aria-hidden="true">
+          <div class="card-thumb-inner thumb-a">
+            <div class="t-info"></div>
+            <div class="t-grid"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            <div class="t-dock"></div>
+          </div>
+        </div>
+        <div class="card-body">
+          <span class="card-tag">OPTION A</span>
+          <h2>底部動作艙</h2>
+          <p>
+            頂部僅薄情報條；中央桌況網格；底部固定超大動作艙：
+            確認入座／發送補位／結帳。手不離底、視線可掃全場。
+          </p>
+          <span class="card-cta">開啟 A 示意</span>
+        </div>
+      </a>
+
+      <a class="card" href="option-b.html">
+        <div class="card-thumb" aria-hidden="true">
+          <div class="card-thumb-inner thumb-b">
+            <div class="t-main"></div>
+            <div class="t-rail"></div>
+          </div>
+        </div>
+        <div class="card-body">
+          <span class="card-tag">OPTION B</span>
+          <h2>左動作右情報</h2>
+          <p>
+            左約 65%：大桌況＋釘底主 CTA。右約 35%：窄情報軌（統計、候位列精簡）。
+            動作與情報左右分離，減少誤觸。
+          </p>
+          <span class="card-cta">開啟 B 示意</span>
+        </div>
+      </a>
+
+      <a class="card" href="option-c.html">
+        <div class="card-thumb" aria-hidden="true">
+          <div class="card-thumb-inner thumb-c">
+            <div class="t-chips"><i></i><i></i><i></i><i></i><i></i></div>
+            <div class="t-stage"><b></b></div>
+          </div>
+        </div>
+        <div class="card-body">
+          <span class="card-tag">OPTION C · 已鎖定</span>
+          <h2>單焦點舞台</h2>
+          <p>
+            中央巨大焦點面板（選中桌／單）＋超大 CTA；其他桌收成邊緣 chip，
+            統計／候位進側抽屜。一次只處理「眼前這一桌」。
+          </p>
+          <span class="card-cta">開啟 C 示意（＝主 Preview 預設）</span>
+        </div>
+      </a>
+    </div>
+
+    <p style="margin-top:36px;font-size:12px;color:#737373;line-height:1.6">
+      路徑：<code>layouts/</code> ·
+      靜態 HTML＋共用 <code>layouts.css</code> · 非正式環境、無金流。
+      模擬 T3：DevTools 自訂裝置 1920×1080。
+    </p>
+  </div>
+</body>
+</html>

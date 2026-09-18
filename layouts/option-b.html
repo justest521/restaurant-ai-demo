@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>版面 B｜左動作右情報 — Sunmi T3 佈局選項</title>
+  <link rel="stylesheet" href="layouts.css">
+</head>
+<body>
+  <div class="demo-page">
+    <div class="demo-bar">
+      <a href="index.html">← 佈局選項</a>
+      <span class="opt-name">B · 左動作右情報</span>
+      <span class="opt-desc">左側約 65% 大桌況＋動作；右側約 35% 窄情報軌（候位／統計精簡）</span>
+      <div class="demo-links">
+        <a href="option-a.html">A</a>
+        <a href="option-b.html" class="is-on">B</a>
+        <a href="option-c.html">C</a>
+        <a href="../index.html">主 Preview</a>
+      </div>
+    </div>
+
+    <div class="stage-wrap">
+      <div class="t3" id="t3" aria-label="Sunmi T3 1920×1080 示意">
+        <header class="app-top">
+          <div class="brand-mini"><span class="dot" aria-hidden="true"></span>示範食堂 · 櫃台</div>
+          <div class="meta-mini">
+            <span class="chip ok">營業中</span>
+            <span class="chip">週日 17:08</span>
+            <span class="chip">店長</span>
+          </div>
+        </header>
+
+        <div class="now-do">
+          <span class="now-do-badge">現在該做</span>
+          <span id="now-do-text">候位王小明 4 人 · 空桌 A2 可發送補位</span>
+        </div>
+
+        <div class="opt-b">
+          <div class="left">
+            <div class="left-body">
+              <div class="sel-label" id="sel-label">點桌後左側動作列啟用 · 情報在右側窄軌</div>
+              <div class="table-grid cols-4" id="grid" role="listbox" aria-label="桌況"></div>
+            </div>
+            <div class="action-tray" role="toolbar" aria-label="主動作">
+              <button type="button" class="btn btn-lg btn-primary" id="btn-seat" disabled>確認入座</button>
+              <button type="button" class="btn btn-lg btn-secondary" id="btn-page" disabled>發送補位</button>
+              <button type="button" class="btn btn-lg btn-brass" id="btn-pay" disabled>結帳</button>
+            </div>
+          </div>
+
+          <aside class="rail" aria-label="情報軌">
+            <div class="rail-h">情報軌 · 精簡</div>
+            <div class="rail-stats">
+              <div class="rail-stat"><div class="k">用餐</div><div class="v" id="s-dining">5</div></div>
+              <div class="rail-stat"><div class="k">待清</div><div class="v" id="s-dirty">1</div></div>
+              <div class="rail-stat"><div class="k">空桌</div><div class="v" id="s-empty">2</div></div>
+              <div class="rail-stat"><div class="k">候位</div><div class="v" id="s-wait">3</div></div>
+              <div class="rail-stat"><div class="k">來客</div><div class="v sm">86</div></div>
+              <div class="rail-stat"><div class="k">翻桌</div><div class="v sm">12</div></div>
+            </div>
+            <div class="rail-h">候位列</div>
+            <div class="wait-list" id="wait-list"></div>
+            <div class="rail-note">右側僅顯示情報 · 不放主 CTA（動作在左）</div>
+          </aside>
+        </div>
+
+        <div class="toast" id="toast" role="status"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const tables = [
+      { id: "A1", seats: 4, status: "dining", guests: 3, mins: 42 },
+      { id: "A2", seats: 2, status: "empty", guests: 0, mins: 0 },
+      { id: "A3", seats: 4, status: "dining", guests: 4, mins: 96, late: true },
+      { id: "A4", seats: 6, status: "dining", guests: 5, mins: 28 },
+      { id: "B1", seats: 2, status: "dirty", guests: 0, mins: 8 },
+      { id: "B2", seats: 4, status: "dining", guests: 2, mins: 55 },
+      { id: "B3", seats: 4, status: "empty", guests: 0, mins: 0 },
+      { id: "B4", seats: 8, status: "dining", guests: 7, mins: 18 }
+    ];
+    const waitlist = [
+      { name: "王小明", party: 4, wait: "12′", tag: "可補位" },
+      { name: "陳小姐", party: 2, wait: "8′", tag: "邀請中" },
+      { name: "林家", party: 6, wait: "25′", tag: "候位" }
+    ];
+    let selected = null;
+    let waitSel = 0;
+    const statusLabel = { empty: "空桌", dining: "用餐中", dirty: "待清桌" };
+
+    function toast(msg) {
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.classList.add("show");
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => el.classList.remove("show"), 1800);
+    }
+
+    function refreshStats() {
+      document.getElementById("s-dining").textContent = tables.filter(t => t.status === "dining").length;
+      document.getElementById("s-dirty").textContent = tables.filter(t => t.status === "dirty").length;
+      document.getElementById("s-empty").textContent = tables.filter(t => t.status === "empty").length;
+      document.getElementById("s-wait").textContent = waitlist.length;
+    }
+
+    function updateTray() {
+      const t = tables.find(x => x.id === selected);
+      const seat = document.getElementById("btn-seat");
+      const page = document.getElementById("btn-page");
+      const pay = document.getElementById("btn-pay");
+      const label = document.getElementById("sel-label");
+      if (!t) {
+        seat.disabled = page.disabled = pay.disabled = true;
+        label.textContent = "點桌後左側動作列啟用 · 情報在右側窄軌";
+        return;
+      }
+      label.textContent = "已選 " + t.id + " · " + statusLabel[t.status];
+      seat.disabled = !(t.status === "empty" || t.status === "dirty");
+      page.disabled = t.status !== "empty";
+      pay.disabled = t.status !== "dining";
+    }
+
+    function renderWait() {
+      const list = document.getElementById("wait-list");
+      list.innerHTML = "";
+      waitlist.forEach((w, i) => {
+        const el = document.createElement("button");
+        el.type = "button";
+        el.className = "wait-item" + (waitSel === i ? " is-on" : "");
+        el.innerHTML =
+          '<div><div class="name">' + w.name + '</div><div class="sub">' + w.party + " 人 · 已候 " + w.wait + "</div></div>" +
+          '<span class="chip' + (w.tag === "可補位" ? " ok" : "") + '">' + w.tag + "</span>";
+        el.addEventListener("click", () => {
+          waitSel = i;
+          document.getElementById("now-do-text").textContent =
+            "候位" + w.name + " " + w.party + " 人 · 選空桌後可發送補位或確認入座";
+          renderWait();
+        });
+        list.appendChild(el);
+      });
+    }
+
+    function render() {
+      const grid = document.getElementById("grid");
+      grid.innerHTML = "";
+      tables.forEach(t => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "tbl " + t.status + (t.late ? " warn-late" : "") + (selected === t.id ? " is-on" : "");
+        btn.innerHTML =
+          '<div class="tbl-id">' + t.id + '</div>' +
+          '<div class="tbl-meta"><span class="tbl-status">' + statusLabel[t.status] +
+          (t.late ? " · 過久" : "") + '</span><span>' + t.seats + " 人" +
+          (t.status === "dining" ? " · " + t.mins + "′" : "") + "</span></div>";
+        btn.addEventListener("click", () => { selected = t.id; render(); updateTray(); });
+        grid.appendChild(btn);
+      });
+      refreshStats();
+      updateTray();
+    }
+
+    document.getElementById("btn-seat").addEventListener("click", () => {
+      const t = tables.find(x => x.id === selected);
+      if (!t || (t.status !== "empty" && t.status !== "dirty")) return;
+      const w = waitlist[waitSel];
+      t.status = "dining"; t.guests = w ? Math.min(t.seats, w.party) : 2; t.mins = 0; t.late = false;
+      if (w) { waitlist.splice(waitSel, 1); waitSel = 0; }
+      toast(t.id + " 確認入座" + (w ? " · " + w.name : ""));
+      document.getElementById("now-do-text").textContent = t.id + " 已入座 — 可帶位點餐";
+      render(); renderWait();
+    });
+    document.getElementById("btn-page").addEventListener("click", () => {
+      const t = tables.find(x => x.id === selected);
+      const w = waitlist[waitSel];
+      if (!t || t.status !== "empty") return;
+      toast("補位已送 → " + (w ? w.name : "候位客") + " / " + t.id);
+      if (w) w.tag = "邀請中";
+      renderWait();
+    });
+    document.getElementById("btn-pay").addEventListener("click", () => {
+      const t = tables.find(x => x.id === selected);
+      if (!t || t.status !== "dining") return;
+      t.status = "dirty"; t.guests = 0; t.mins = 0; t.late = false;
+      toast(t.id + " 結帳完成 → 待清");
+      render();
+    });
+
+    render();
+    renderWait();
+  </script>
+</body>
+</html>
