@@ -43,7 +43,8 @@
         var root = document.documentElement;
         var scale = 1;
         if (useFit) {
-          scale = Math.min((vw - PAD) / w, (vh - PAD) / h, 1);
+          var pad = (vw >= w && vh >= h) ? 0 : PAD;
+          scale = Math.min((vw - pad) / w, (vh - pad) / h, 1);
           if (!(scale > 0)) scale = 1;
           root.style.setProperty("--t3-scale", String(scale));
           root.style.setProperty("--t3-stage-w", w + "px");

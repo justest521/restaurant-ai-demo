@@ -249,7 +249,8 @@ body.chrome-off .t3-screen {
 .viewport-hud {
   position: fixed;
   left: 10px;
-  bottom: 10px;
+  top: 10px;
+  bottom: auto;
   z-index: 70;
   display: flex;
   align-items: center;
@@ -285,6 +286,9 @@ html[data-t3-fit="1"] .desk {
   height: 100dvh;
   min-height: 0;
   overflow: hidden;
+  padding: 0;
+}
+html[data-t3-fit="1"][data-viewport="laptop"] .desk {
   padding: 8px;
 }
 html[data-t3-fit="1"] .t3-fit {

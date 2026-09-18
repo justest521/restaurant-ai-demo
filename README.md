@@ -37,7 +37,7 @@ https://justest521.github.io/restaurant-ai-demo/
 | 寬 ≥1024 且高 ≥560（筆電） | `laptop` | 縮放整頁 1920×1080 舞台 |
 | 更窄／更矮 | `fluid` | 不縮放；沿用流動版 |
 
-左下角 HUD 與 ⋯選單「視窗」顯示目前縮放比。要看 T3 原尺寸：瀏覽器全螢幕 FHD，或 DevTools 自訂裝置 **Sunmi T3：1920×1080**、觸控。預設舞台＋Paper；⋯選單可開機框／切 Steel。
+左上角 HUD 與 ⋯選單「視窗」顯示目前縮放比。要看 T3 原尺寸：瀏覽器全螢幕 FHD，或 DevTools 自訂裝置 **Sunmi T3：1920×1080**、觸控。預設舞台＋Paper；⋯選單可開機框／切 Steel。
 
 掃碼點餐 `tableside.html` 維持行動優先、可捲動，不走 T3 縮放。
 
