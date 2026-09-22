@@ -1939,7 +1939,7 @@
     var lv = eta.ageLevel || "ok";
     return (
       '<div class="foh-live-eta is-' + lv + '" data-foh-eta-order="' + esc(order.id) + '"' +
-        ' title="同源票齡＋佇列深度 · mock · 非保證分鐘">' +
+        ' title="票齡＋佇列 · 非保證分鐘">' +
         '<div class="foh-live-eta-h">FOH／客人 ETA（同源票齡）</div>' +
         '<div class="foh-live-eta-row">' +
           '<span>票齡 <strong data-foh-age>' + Math.floor(eta.ageMin) + "</strong> 分" +
@@ -3648,6 +3648,21 @@
     var ovBtn = document.getElementById("btn-overflow");
     if (ov) ov.hidden = !overflowOpen;
     if (ovBtn) ovBtn.setAttribute("aria-expanded", overflowOpen ? "true" : "false");
+    var banBtn = document.getElementById("btn-banner-toggle");
+    var bar = document.getElementById("preview-banner");
+    if (banBtn && bar) banBtn.textContent = bar.hidden ? "顯示 Preview 橫幅" : "關閉 Preview 橫幅";
+    var hudBtn = document.getElementById("btn-hud-toggle");
+    var hud = document.getElementById("viewport-hud");
+    if (hudBtn && hud) hudBtn.textContent = hud.hidden ? "顯示視窗指示" : "關閉視窗指示";
+    var intel = document.getElementById("btn-fluid-intel");
+    if (intel) {
+      var drawerOpen = infoDrawerOpen || posMenuOpen;
+      intel.setAttribute("aria-expanded", drawerOpen ? "true" : "false");
+      intel.textContent = drawerOpen ? "情報 ◂" : "情報 ▸";
+    }
+    var sha = document.getElementById("preview-sha");
+    var shaMenu = document.getElementById("preview-sha-menu");
+    if (sha && shaMenu) shaMenu.textContent = sha.textContent;
   }
 
   function renderAnalytics() {
@@ -3771,8 +3786,8 @@
     if (state.screen === "wait") {
       var openBf = (state.backfillRounds || []).find(function (r) { return r.status === "open"; });
       if (openBf) {
-        return "原子補位進行中 → " + (openBf.tableLabel || "") +
-          " · 倒數 " + formatCountdown(openBf.until) + " · 先確認者得桌";
+        return "補位進行中 → " + (openBf.tableLabel || "") +
+          " · 倒數 " + formatCountdown(openBf.until) + " · 先確認者得桌，其餘「已被訂走」";
       }
       if (invited.length) return "有 " + invited.length + " 組邀請中，請確認入座／接受補位";
       if (waiting.length) {
@@ -3833,6 +3848,20 @@
         actions.innerHTML = "";
       }
     }
+    var lemon = document.querySelector(".focus-lemon-text");
+    if (lemon && t) lemon.textContent = t;
+  }
+
+  function isFluid() {
+    return document.documentElement.getAttribute("data-viewport") === "fluid";
+  }
+
+  function fluidLemonHtml() {
+    if (!isFluid()) return "";
+    var line = nowDoText();
+    if (!line) return "";
+    return '<div class="focus-lemon" role="status"><span class="now-do-badge">現在該做</span><span class="focus-lemon-text">' +
+      esc(line) + "</span></div>";
   }
 
   function renderHint() {
@@ -3966,7 +3995,8 @@
           actions += ' <span class="help rush-done">已略過催菜</span>';
         } else {
           actions +=
-            ' <button type="button" class="btn primary" data-rush-confirm="' + esc(o.id) +
+            ' <button type="button" class="' + (isFluid() ? "btn" : "btn primary") +
+            '" data-rush-confirm="' + esc(o.id) +
             '">確認催菜</button>' +
             ' <button type="button" class="btn" data-rush-skip="' + esc(o.id) + '">略過</button>';
         }
@@ -4063,6 +4093,11 @@
     if (d) d.classList.add("open");
     if (b) { b.hidden = false; b.classList.add("open"); }
     if (btn) btn.setAttribute("aria-expanded", "true");
+    var intelOpen = document.getElementById("btn-fluid-intel");
+    if (intelOpen) {
+      intelOpen.setAttribute("aria-expanded", "true");
+      intelOpen.textContent = "情報 ◂";
+    }
   }
 
   function closeInfoDrawer() {
@@ -4074,6 +4109,11 @@
     if (d) d.classList.remove("open");
     if (b) { b.classList.remove("open"); b.hidden = true; }
     if (btn) btn.setAttribute("aria-expanded", "false");
+    var intelShut = document.getElementById("btn-fluid-intel");
+    if (intelShut) {
+      intelShut.setAttribute("aria-expanded", "false");
+      intelShut.textContent = "情報 ▸";
+    }
   }
 
   function lcDrawerShell(inner, opts) {
@@ -4225,6 +4265,7 @@
       focusInner =
         '<div class="focus-panel" id="focus-panel">' +
           "<div>" +
+            fluidLemonHtml() +
             '<div class="focus-id">' + esc(t.name) + "</div>" +
             '<div class="focus-status ' + t.status + '">' +
               '<span class="dot" aria-hidden="true"></span>' +
@@ -4304,7 +4345,7 @@
       '<button type="button" class="btn" style="margin-top:12px" data-go-wait="1">開啟候位</button>';
 
     document.getElementById("view").innerHTML =
-      '<div class="layout-c" data-layout="C">' +
+      '<div class="layout-c" data-layout="C" data-peak="tables">' +
         '<div class="edge-chips" role="tablist" aria-label="桌位邊緣 chip">' + chips + "</div>" +
         '<div class="focus">' + focusInner + cta + "</div>" +
         lcDrawerShell(drawer, { label: "情報" }) +
@@ -4595,6 +4636,7 @@
     if (!focus) {
       focusInner =
         '<div class="focus-panel" id="focus-panel">' +
+          fluidLemonHtml() +
           '<div class="focus-empty">' +
             '<div class="focus-id">候位</div>' +
             "<p>目前沒有候位中的組別。</p>" +
@@ -4618,10 +4660,10 @@
             (focusHold.partyIds || []).length +
             "</strong> 組搶 <strong>" +
             esc(focusHold.tableLabel || "") +
-            "</strong>；先確認者留桌（原子）。</p>"
+            "</strong>；先確認者留桌，其餘「已被訂走」。</p>"
           : multiOk
-            ? '<p class="bf-fair">多組補位：勾選 ≥2 組 → 選一空桌 → 同時邀請；僅首個「確認入座／接受補位」得桌。</p>'
-            : '<p class="bf-fair help">多組原子補位需升級「小店」。單組邀請仍可用。</p>';
+            ? '<p class="bf-fair">多組補位：勾選至少 2 組、選同一空桌、同時邀請；只有先確認的那組入座。</p>'
+            : '<p class="bf-fair help">多組同時補位需升級方案。單組邀請仍可用。</p>';
 
       var pickHint =
         multiOk && pickIds.length
@@ -4636,6 +4678,7 @@
       focusInner =
         '<div class="focus-panel" id="focus-panel">' +
           "<div>" +
+            fluidLemonHtml() +
             '<div class="focus-id" style="font-size:clamp(36px,5.5vw,56px)">' + esc(focus.name) + "</div>" +
             '<div class="focus-status ' + focus.status + '">' +
               '<span class="dot" aria-hidden="true"></span>' +
@@ -4731,11 +4774,17 @@
       multiOk && pickIds.length >= 2 ? "同時補位 " + pickIds.length + " 組" :
       multiOk ? "發送補位" : "邀請此組";
     var confirmLabel = focus && focus.status === "held" ? "確認入座（訂位到店）" : "確認入座／接受補位";
+    var confirmIsPrimary = isFluid() && canConfirm;
+    var inviteIsPrimary = confirmIsPrimary ? false : (isFluid() ? !!canInvite : true);
+    var noshowIsPrimary = !!(focus && focus.status === "noshow" &&
+      (isFluid() ? (!inviteIsPrimary && !confirmIsPrimary) : true));
     var cta =
       '<div class="cta-row" role="toolbar" aria-label="候位主操作">' +
-        '<button type="button" class="btn xl primary' + (!canInvite ? " is-off" : "") +
+        '<button type="button" class="btn xl ' + (inviteIsPrimary ? "primary" : "secondary") +
+          (!canInvite ? " is-off" : "") +
           '" id="btn-focus-invite"' + (!canInvite ? " disabled" : "") + ">" + inviteLabel + "</button>" +
-        '<button type="button" class="btn xl brass' + (!canConfirm ? " is-off" : "") +
+        '<button type="button" class="btn xl ' + (confirmIsPrimary ? "primary" : "brass") +
+          (!canConfirm ? " is-off" : "") +
           '" id="btn-focus-confirm"' + (!canConfirm ? " disabled" : "") + ">" + confirmLabel + "</button>" +
         '<button type="button" class="btn xl secondary' + (!canCancel ? " is-off" : "") +
           '" id="btn-focus-cancel"' + (!canCancel ? " disabled" : "") + ">取消</button>" +
@@ -4744,7 +4793,8 @@
             '">加速遲到</button>'
           : "") +
         (focus && focus.status === "noshow"
-          ? '<button type="button" class="btn xl primary" data-start-backfill="' +
+          ? '<button type="button" class="btn xl ' + (noshowIsPrimary ? "primary" : "secondary") +
+            '" data-start-backfill="' +
             (focus.reserveTableId || "") + '">對空桌發起補位</button>'
           : "") +
       "</div>";
@@ -4809,7 +4859,7 @@
         : "");
 
     document.getElementById("view").innerHTML =
-      '<div class="layout-c" data-layout="C">' +
+      '<div class="layout-c" data-layout="C" data-peak="wait">' +
         '<div class="edge-chips" role="tablist" aria-label="候位邊緣 chip">' + chips + "</div>" +
         '<div class="focus">' + focusInner + cta + "</div>" +
         lcDrawerShell(drawer, { label: "名單", wide: true }) +
@@ -4911,6 +4961,7 @@
     var focusInner =
       '<div class="focus-panel" id="focus-panel">' +
         "<div>" +
+          fluidLemonHtml() +
           '<div class="focus-id">' + esc(focusName) + "</div>" +
           '<div class="focus-status ' + (table ? table.status : "empty") + '">' +
             '<span class="dot" aria-hidden="true"></span>' +
@@ -4930,7 +4981,8 @@
           '<div class="pay-row pay">' + pays + "</div>" +
           (openOrd ? ('<div class="spine-chips" style="margin-top:8px">' + sourceChipsHtml(openOrd.sources) + "</div>") : "") +
           (openOrd ? fohLiveEtaHtml(openOrd) : "") +
-          '<span class="line-fake-badge" style="margin-top:10px">示意·非金流 · N2 脊柱 · N3 票齡 ETA</span>' +
+          '<span class="line-fake-badge staff-jargon" style="margin-top:10px">示意·非金流 · N2 脊柱 · N3 票齡 ETA</span>' +
+          (isFluid() ? '<span class="line-fake-badge" style="margin-top:10px">示意 · 非保證分鐘</span>' : "") +
         "</div>" +
         '<div class="focus-side">' +
           "<h3>本單明細（脊柱）</h3>" +
@@ -4942,12 +4994,19 @@
     var canPay = spineQty > 0;
     var canSend = state.ticket.lines.length > 0;
     var canCheckout = !!((openOrd && !state.ticket.lines.length) || (!openOrd && state.ticket.lines.length));
+    var rush = isFluid() ? nowDoRushTarget() : null;
+    var sendPrimary = isFluid() && !rush && canSend;
     var cta =
       '<div class="cta-row" role="toolbar" aria-label="POS 主操作" style="grid-template-columns:1fr 1fr 1.1fr 1.3fr">' +
+        (rush
+          ? '<button type="button" class="btn xl primary" data-rush-confirm="' + esc(rush.id) +
+            '">催菜</button>'
+          : "") +
         '<button type="button" class="btn xl secondary" id="btn-open-menu">菜單</button>' +
         '<button type="button" class="btn xl secondary" id="btn-clear-ticket"' +
           (state.ticket.lines.length ? "" : " disabled") + ">清空</button>" +
-        '<button type="button" class="btn xl secondary' + (!canSend ? " is-off" : "") +
+        '<button type="button" class="btn xl ' + (sendPrimary ? "primary" : "secondary") +
+          (!canSend ? " is-off" : "") +
           '" id="btn-send-kitchen"' + (!canSend ? " disabled" : "") + ">送廚</button>" +
         '<button type="button" class="btn xl brass' + (!canCheckout ? " is-off" : "") +
           '" id="btn-checkout"' + (!canCheckout ? " disabled" : "") + ">結帳（示意）</button>" +
@@ -4972,7 +5031,7 @@
     if (prevMenu) infoDrawerOpen = true;
 
     document.getElementById("view").innerHTML =
-      '<div class="layout-c" data-layout="C">' +
+      '<div class="layout-c" data-layout="C" data-peak="pos">' +
         '<div class="edge-chips" role="tablist" aria-label="POS 桌號 chip">' + chips + "</div>" +
         '<div class="focus">' + focusInner + cta + "</div>" +
         lcDrawerShell(drawer, { label: posMenuOpen ? "菜單" : "廚列", wide: true }) +
@@ -5568,6 +5627,53 @@
       renderTabs();
       return;
     }
+    if (e.target.closest("#btn-banner-close")) {
+      try { sessionStorage.setItem("restaurant-ai-demo-preview-banner", "closed"); } catch (err) {}
+      var closeBar = document.getElementById("preview-banner");
+      if (closeBar) {
+        closeBar.hidden = true;
+        closeBar.classList.remove("is-open");
+      }
+      renderHeaderChrome();
+      return;
+    }
+    if (e.target.id === "btn-banner-toggle") {
+      var toggleBar = document.getElementById("preview-banner");
+      var openNext = !!(toggleBar && toggleBar.hidden);
+      try {
+        sessionStorage.setItem("restaurant-ai-demo-preview-banner", openNext ? "open" : "closed");
+      } catch (err) {}
+      if (toggleBar) {
+        toggleBar.hidden = !openNext;
+        toggleBar.classList.toggle("is-open", openNext);
+      }
+      overflowOpen = false;
+      renderHeaderChrome();
+      return;
+    }
+    if (e.target.id === "btn-hud-toggle") {
+      var hudEl = document.getElementById("viewport-hud");
+      var showHud = !!(hudEl && hudEl.hidden);
+      try {
+        sessionStorage.setItem("restaurant-ai-demo-preview-hud", showHud ? "open" : "closed");
+      } catch (err) {}
+      if (hudEl) hudEl.hidden = !showHud;
+      overflowOpen = false;
+      renderHeaderChrome();
+      return;
+    }
+    if (e.target.closest("#btn-fluid-intel")) {
+      overflowOpen = false;
+      if (PEAK_SCREENS.indexOf(state.screen) === -1) {
+        moreOpen = !moreOpen;
+        render();
+        return;
+      }
+      if (infoDrawerOpen || posMenuOpen) closeInfoDrawer();
+      else openInfoDrawer();
+      renderHeaderChrome();
+      return;
+    }
     if (overflowOpen && !e.target.closest(".more-wrap")) {
       overflowOpen = false;
       renderHeaderChrome();
@@ -5627,9 +5733,8 @@
       var pt = state.tables.find(function (x) { return x.id === selectedTableId; });
       if (!pt || (pt.status !== "empty" && pt.status !== "dirty")) return;
       backfillTargetTableId = pt.id;
-      infoDrawerOpen = true;
       goScreen("wait");
-      toast("已指定 " + pt.name + " 為補位目標 · 勾選≥2組後發送（原子）");
+      toast("已指定 " + pt.name + " 為補位目標 · 勾選至少 2 組後按發送補位");
       return;
     }
     if (e.target.id === "btn-focus-pay") {
@@ -6324,6 +6429,9 @@
 
   tickClock();
   setInterval(tickClock, 30000);
+  document.documentElement.addEventListener("preview-viewport", function () {
+    render();
+  });
   render();
 
   if (typeof window.fitDeskStage === "function") window.fitDeskStage();
