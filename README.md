@@ -29,15 +29,15 @@ https://justest521.github.io/restaurant-ai-demo/
 
 ### 視窗（櫃台腦）
 
-內層舞台固定 **Sunmi T3 1920×1080**（Layout C 單焦點）。視窗夠大時 1:1；常見筆電（約 **1280×800** 起）自動 `transform: scale()` 整頁舞台以符合視窗，避免巢狀捲軸把桌況／候位焦點與底部 CTA 裁切。
+寬度 **≥ 1920** 維持內層 **Sunmi T3 1920×1080** 舞台（Layout C 單焦點）。視窗夠高時 1:1；寬度已達 1920 但高度較矮時，才 `transform: scale()` 整頁舞台。寬度 **&lt; 1920**（iPad 橫向、筆電）**不縮放整頁**，改流動櫃台：桌 chip 2–3 欄、單焦點、底列主 CTA、情報預設收合。
 
-| 視窗 | `data-viewport` | 行為 |
+| 視窗寬 | `data-viewport` | 行為 |
 |---|---|---|
-| ≥ 1920×1080 | `t3` | 1:1 舞台 |
-| 寬 ≥1024 且高 ≥560（筆電） | `laptop` | 縮放整頁 1920×1080 舞台 |
-| 更窄／更矮 | `fluid` | 不縮放；沿用流動版 |
+| ≥ 1920 且舞台塞得下 | `t3` | 1:1 T3 殼 |
+| ≥ 1920 但高度不足 | `laptop` | 只在這個寬度縮放 1920×1080 舞台 |
+| &lt; 1920 | `fluid` | `--t3-scale: 1`，流動版；觸控尺寸保留 |
 
-左上角 HUD 與 ⋯選單「視窗」顯示目前縮放比。要看 T3 原尺寸：瀏覽器全螢幕 FHD，或 DevTools 自訂裝置 **Sunmi T3：1920×1080**、觸控。預設舞台＋Paper；⋯選單可開機框／切 Steel。
+⋯選單「視窗」顯示目前模式。縮放指示與 Preview 橫幅預設收合（可從 ⋯ 打開）。要看 T3 原尺寸：瀏覽器全螢幕 FHD，或 DevTools 自訂裝置 **Sunmi T3：1920×1080**。預設舞台＋Paper；⋯選單可開機框／切 Steel。此 Preview **不是** 實機 T3 Gate。
 
 掃碼點餐 `tableside.html` 維持行動優先、可捲動，不走 T3 縮放。
 
@@ -77,7 +77,7 @@ https://justest521.github.io/restaurant-ai-demo/
 ## 檔案
 
 ```
-index.html          櫃台腦（T3 1920×1080 舞台；筆電自動縮放）
+index.html          櫃台腦（≥1920 為 T3 舞台；較窄為 iPad 流動櫃台）
 app.js              N1–N6 mock 邏輯（含候位 ETA 與桌況同源）
 styles.css
 favicon.svg / .ico  品牌綠 #0E7B3F＋黃銅 #C4A035

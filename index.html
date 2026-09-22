@@ -22,12 +22,27 @@
         document.documentElement.classList.add("chrome-off-boot");
       }
 
-      /* Desk Preview: keep an inner Sunmi T3 1920×1080 stage and scale it
-         to common laptop windows. One mode — not a second fluid layout. */
-      var T3_W = 1920, T3_H = 1080, FIT_MIN_W = 1024, FIT_MIN_H = 560, PAD = 16;
+      /* Width < 1920: fluid counter (no whole-page scale).
+         Width ≥ 1920: existing T3 1920×1080 shell, scaled only if the
+         window is shorter than the stage. */
+      var T3_W = 1920, T3_H = 1080, PAD = 16;
+      var BANNER_KEY = "restaurant-ai-demo-preview-banner";
+      var HUD_KEY = "restaurant-ai-demo-preview-hud";
       function chromeOn() {
         try { return localStorage.getItem("restaurant-ai-demo-preview-t3-chrome") === "on"; }
         catch (e) { return false; }
+      }
+      function readPref(key) {
+        try { return sessionStorage.getItem(key); }
+        catch (e) { return null; }
+      }
+      function applyPreviewBanner(fluid) {
+        var bar = document.getElementById("preview-banner");
+        if (!bar) return;
+        var pref = readPref(BANNER_KEY);
+        var open = pref === "open" || (pref !== "closed" && !fluid);
+        bar.hidden = !open;
+        bar.classList.toggle("is-open", open);
       }
       function fitDeskStage() {
         var on = chromeOn();
@@ -39,10 +54,11 @@
           vw = window.visualViewport.width;
           vh = window.visualViewport.height;
         }
-        var useFit = vw >= FIT_MIN_W && vh >= FIT_MIN_H;
         var root = document.documentElement;
+        var prevMode = root.getAttribute("data-viewport");
+        var fluid = vw < T3_W;
         var scale = 1;
-        if (useFit) {
+        if (!fluid) {
           var pad = (vw >= w && vh >= h) ? 0 : PAD;
           scale = Math.min((vw - pad) / w, (vh - pad) / h, 1);
           if (!(scale > 0)) scale = 1;
@@ -52,22 +68,41 @@
           root.setAttribute("data-t3-fit", "1");
           root.setAttribute("data-viewport", scale < 0.995 ? "laptop" : "t3");
         } else {
-          root.style.removeProperty("--t3-scale");
+          root.style.setProperty("--t3-scale", "1");
           root.style.removeProperty("--t3-stage-w");
           root.style.removeProperty("--t3-stage-h");
           root.removeAttribute("data-t3-fit");
           root.setAttribute("data-viewport", "fluid");
+          scale = 1;
         }
         var pct = Math.round(scale * 100);
         var chip = document.getElementById("viewport-chip");
         if (chip) {
-          chip.textContent = !useFit ? "流動版" : (scale < 0.995 ? ("縮放 " + pct + "%") : "T3 1:1");
+          if (fluid) {
+            chip.textContent = "iPad／流動｜觸控尺寸保留";
+            chip.title = "寬度未滿 1920：不縮放整頁 T3 舞台，觸控尺寸保留";
+          } else if (scale < 0.995) {
+            chip.textContent = "T3 縮放 " + pct + "%";
+            chip.title = "視窗寬 ≥1920，高度不足時縮放 1920×1080 舞台";
+          } else {
+            chip.textContent = "T3 1:1";
+            chip.title = "Sunmi T3 1920×1080";
+          }
         }
         var hud = document.getElementById("viewport-hud");
         var hudText = document.getElementById("viewport-hud-text");
-        if (hud) hud.hidden = !(useFit && scale < 0.995);
-        if (hudText) hudText.textContent = pct + "% · 目標 T3 1920×1080";
-        root.style.setProperty("--t3-scale-pct", pct + "%");
+        if (hudText) {
+          hudText.textContent = fluid
+            ? "iPad／流動｜觸控尺寸保留"
+            : (pct + "% · T3 1920×1080");
+        }
+        if (hud) hud.hidden = readPref(HUD_KEY) !== "open";
+        root.style.setProperty("--t3-scale-pct", fluid ? "1" : pct + "%");
+        applyPreviewBanner(fluid);
+        var nextMode = root.getAttribute("data-viewport");
+        if (prevMode && prevMode !== nextMode) {
+          root.dispatchEvent(new CustomEvent("preview-viewport"));
+        }
       }
       window.fitDeskStage = fitDeskStage;
       fitDeskStage();
@@ -96,8 +131,9 @@
     <div class="t3-device" id="t3-device" aria-label="Sunmi T3 15.6 吋 FHD 1920×1080 示意">
       <div class="t3-screen">
         <div class="app-shell">
-          <div class="preview-banner" role="status">
-            Preview｜非正式環境　·　模擬 AI　·　Demo mock ≠ 正式授權　·　無真實金流、無正式 LINE
+          <div class="preview-banner" id="preview-banner" role="status">
+            <span class="preview-banner-text">Preview·示意　非正式環境 · 模擬 · 無真實金流、無正式 LINE</span>
+            <button type="button" class="preview-banner-x" id="btn-banner-close" aria-label="關閉 Preview 橫幅">✕</button>
           </div>
 
           <div class="offline-banner" id="offline-banner" hidden role="alert">
@@ -120,6 +156,7 @@
                 <select id="org-select" aria-label="切換店家"></select>
               </label>
               <span class="role-badge" id="role-badge" title="目前身分">店長</span>
+              <button type="button" class="ghost intel-btn" id="btn-fluid-intel" aria-expanded="false" aria-controls="lc-drawer">情報 ▸</button>
               <div class="more-wrap">
                 <button type="button" class="ghost more-btn" id="btn-overflow" aria-expanded="false" aria-controls="overflow-menu" title="更多設定">⋯</button>
                 <div class="overflow-menu" id="overflow-menu" hidden role="menu">
@@ -139,7 +176,11 @@
                   </div>
                   <div class="overflow-row">
                     <span class="overflow-lab">視窗</span>
-                    <span id="viewport-chip" class="overflow-clock" title="內層舞台固定 1920×1080；筆電視窗自動縮放">T3 1:1</span>
+                    <span id="viewport-chip" class="overflow-clock" title="寬度未滿 1920 為流動櫃台；≥1920 維持 T3 舞台">T3 1:1</span>
+                  </div>
+                  <div class="overflow-row">
+                    <span class="overflow-lab">版本</span>
+                    <span id="preview-sha-menu" class="overflow-clock">local</span>
                   </div>
                   <div class="overflow-row">
                     <span class="overflow-lab">時間</span>
@@ -149,6 +190,8 @@
                     <span class="overflow-lab">短碼</span>
                     <span class="org-id-chip" id="org-id-chip" title="店家短碼（除錯）">—</span>
                   </div>
+                  <button type="button" class="overflow-action" id="btn-banner-toggle">顯示 Preview 橫幅</button>
+                  <button type="button" class="overflow-action" id="btn-hud-toggle">顯示視窗指示</button>
                   <button type="button" class="overflow-action" id="btn-offline">模擬離線</button>
                   <button type="button" class="overflow-action" id="btn-reset">重設示範</button>
                   <a class="overflow-action overflow-link" href="tableside.html?table=T3" target="_blank" rel="noopener" role="menuitem">掃碼點餐 Preview（T3）</a>
@@ -200,12 +243,12 @@
           <!-- OV-P0-03 peak tabs only + 更多 -->
           <nav class="tabs" role="tablist" aria-label="畫面">
             <div class="tab-group peak" role="presentation">
-              <button type="button" role="tab" data-screen="tables" class="tab is-on" aria-selected="true">桌況</button>
-              <button type="button" role="tab" data-screen="wait" class="tab" aria-selected="false">訂位／候位</button>
-              <button type="button" role="tab" data-screen="pos" class="tab" aria-selected="false">POS-1</button>
+              <button type="button" role="tab" data-screen="tables" class="tab is-on" aria-selected="true"><span class="tab-full">桌況</span><span class="tab-short">尖峰</span></button>
+              <button type="button" role="tab" data-screen="wait" class="tab" aria-selected="false"><span class="tab-full">訂位／候位</span><span class="tab-short">候位</span></button>
+              <button type="button" role="tab" data-screen="pos" class="tab" aria-selected="false"><span class="tab-full">POS-1</span><span class="tab-short">POS</span></button>
             </div>
             <div class="tab-group more-group">
-              <button type="button" class="tab tab-more" id="btn-more" aria-expanded="false" aria-controls="insight-drawer">更多</button>
+              <button type="button" class="tab tab-more" id="btn-more" aria-expanded="false" aria-controls="insight-drawer"><span class="tab-full">更多</span><span class="tab-short">更多</span></button>
             </div>
           </nav>
 
@@ -219,6 +262,7 @@
           <div class="view-scroll">
             <main id="view" class="view"></main>
           </div>
+          <p class="preview-foot" id="preview-foot">Preview · <span id="preview-sha">local</span></p>
         </div>
       </div>
       <div class="t3-foot" aria-hidden="true"><span></span> SUNMI T3 · 15.6″ · 1920×1080 <span></span></div>
